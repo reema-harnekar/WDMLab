@@ -1,0 +1,338 @@
+reema@reema-Inspiron-3558:~$ mysql -u root -p 
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 4
+Server version: 5.7.25-0ubuntu0.18.04.2 (Ubuntu)
+
+Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases
+    -> ;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| DB_LAB             |
+| DWM                |
+| bank_db            |
+| mysql              |
+| performance_schema |
+| photography        |
+| phpmyadmin         |
+| prince_inventory   |
+| python             |
+| student            |
+| sys                |
+| travel             |
+| voating            |
++--------------------+
+14 rows in set (0.00 sec)
+
+mysql> use DWM
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> show tables;
++---------------+
+| Tables_in_DWM |
++---------------+
+| sales         |
++---------------+
+1 row in set (0.00 sec)
+
+mysql> select * from sales;
++------+---------+-----------+---------------+
+| year | country | product   | profit        |
++------+---------+-----------+---------------+
+| 2017 | India   | Mangoes   | 2500000       |
+| 2017 | India   | Oil       | 620000        |
+| 2017 | India   | Rice      | 7250000       |
+| 2017 | Japan   | Apples    | 10206700      |
+| 2017 | Japan   | Mangoes   | 21552400      |
+| 2017 | Russia  | Mangoes   | 6500000       |
+| 2017 | USA     | Fast Food | 1000000000000 |
+| 2017 | USA     | Mangoes   | 36000000      |
+| 2017 | USA     | Oil       | 3500000       |
+| 2018 | India   | Apples    | 460000        |
+| 2018 | India   | Mangoes   | 9500000       |
+| 2018 | India   | Rice      | 50000000      |
+| 2018 | Japan   | Fast Food | 100000        |
+| 2018 | Japan   | Oil       | 625420000     |
+| 2018 | Russia  | Apples    | 7500000       |
+| 2018 | Russia  | Fast Food | 4500000       |
+| 2018 | Russia  | Wheat     | 6985230000    |
+| 2018 | USA     | Apples    | 6500000       |
+| 2018 | USA     | Fast Food | 12000000000   |
+| 2018 | USA     | Oil       | 36000000      |
+| 2019 | Japan   | Rice      | 98726500000   |
+| 2019 | Japan   | Wheat     | 52189000      |
+| 2019 | Russia  | Oil       | 950000        |
+| 2019 | Russia  | Rice      | 852156500     |
++------+---------+-----------+---------------+
+24 rows in set (0.00 sec)
+
+mysql> select year , profit from sales group by year;
+ERROR 1055 (42000): Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'DWM.sales.profit' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
+mysql> select year ,sum(profit) from sales group by year;
++------+---------------+
+| year | sum(profit)   |
++------+---------------+
+| 2017 | 1000088129100 |
+| 2018 |   19725210000 |
+| 2019 |   99631795500 |
++------+---------------+
+3 rows in set (0.07 sec)
+
+mysql> select year ,country,sum(profit) from sales group by year,country;
++------+---------+---------------+
+| year | country | sum(profit)   |
++------+---------+---------------+
+| 2017 | India   |      10370000 |
+| 2017 | Japan   |      31759100 |
+| 2017 | Russia  |       6500000 |
+| 2017 | USA     | 1000039500000 |
+| 2018 | India   |      59960000 |
+| 2018 | Japan   |     625520000 |
+| 2018 | Russia  |    6997230000 |
+| 2018 | USA     |   12042500000 |
+| 2019 | Japan   |   98778689000 |
+| 2019 | Russia  |     853106500 |
++------+---------+---------------+
+10 rows in set (0.00 sec)
+
+mysql> select year ,sum(profit) from sales group by year with ROLLUP;
++------+---------------+
+| year | sum(profit)   |
++------+---------------+
+| 2017 | 1000088129100 |
+| 2018 |   19725210000 |
+| 2019 |   99631795500 |
+| NULL | 1119445134600 |
++------+---------------+
+4 rows in set (0.00 sec)
+
+mysql> select year ,country,sum(profit) from sales group by year,country with ROLLUP;
++------+---------+---------------+
+| year | country | sum(profit)   |
++------+---------+---------------+
+| 2017 | India   |      10370000 |
+| 2017 | Japan   |      31759100 |
+| 2017 | Russia  |       6500000 |
+| 2017 | USA     | 1000039500000 |
+| 2017 | NULL    | 1000088129100 |
+| 2018 | India   |      59960000 |
+| 2018 | Japan   |     625520000 |
+| 2018 | Russia  |    6997230000 |
+| 2018 | USA     |   12042500000 |
+| 2018 | NULL    |   19725210000 |
+| 2019 | Japan   |   98778689000 |
+| 2019 | Russia  |     853106500 |
+| 2019 | NULL    |   99631795500 |
+| NULL | NULL    | 1119445134600 |
++------+---------+---------------+
+14 rows in set (0.00 sec)
+
+mysql> select country,year,sum(profit) from sales group by country,year with ROLLUP;
++---------+------+---------------+
+| country | year | sum(profit)   |
++---------+------+---------------+
+| India   | 2017 |      10370000 |
+| India   | 2018 |      59960000 |
+| India   | NULL |      70330000 |
+| Japan   | 2017 |      31759100 |
+| Japan   | 2018 |     625520000 |
+| Japan   | 2019 |   98778689000 |
+| Japan   | NULL |   99435968100 |
+| Russia  | 2017 |       6500000 |
+| Russia  | 2018 |    6997230000 |
+| Russia  | 2019 |     853106500 |
+| Russia  | NULL |    7856836500 |
+| USA     | 2017 | 1000039500000 |
+| USA     | 2018 |   12042500000 |
+| USA     | NULL | 1012082000000 |
+| NULL    | NULL | 1119445134600 |
++---------+------+---------------+
+15 rows in set (0.00 sec)
+
+mysql> select year ,country,product,sum(profit) from sales group by year,country,product with ROLLUP;
++------+---------+-----------+---------------+
+| year | country | product   | sum(profit)   |
++------+---------+-----------+---------------+
+| 2017 | India   | Mangoes   |       2500000 |
+| 2017 | India   | Oil       |        620000 |
+| 2017 | India   | Rice      |       7250000 |
+| 2017 | India   | NULL      |      10370000 |
+| 2017 | Japan   | Apples    |      10206700 |
+| 2017 | Japan   | Mangoes   |      21552400 |
+| 2017 | Japan   | NULL      |      31759100 |
+| 2017 | Russia  | Mangoes   |       6500000 |
+| 2017 | Russia  | NULL      |       6500000 |
+| 2017 | USA     | Fast Food | 1000000000000 |
+| 2017 | USA     | Mangoes   |      36000000 |
+| 2017 | USA     | Oil       |       3500000 |
+| 2017 | USA     | NULL      | 1000039500000 |
+| 2017 | NULL    | NULL      | 1000088129100 |
+| 2018 | India   | Apples    |        460000 |
+| 2018 | India   | Mangoes   |       9500000 |
+| 2018 | India   | Rice      |      50000000 |
+| 2018 | India   | NULL      |      59960000 |
+| 2018 | Japan   | Fast Food |        100000 |
+| 2018 | Japan   | Oil       |     625420000 |
+| 2018 | Japan   | NULL      |     625520000 |
+| 2018 | Russia  | Apples    |       7500000 |
+| 2018 | Russia  | Fast Food |       4500000 |
+| 2018 | Russia  | Wheat     |    6985230000 |
+| 2018 | Russia  | NULL      |    6997230000 |
+| 2018 | USA     | Apples    |       6500000 |
+| 2018 | USA     | Fast Food |   12000000000 |
+| 2018 | USA     | Oil       |      36000000 |
+| 2018 | USA     | NULL      |   12042500000 |
+| 2018 | NULL    | NULL      |   19725210000 |
+| 2019 | Japan   | Rice      |   98726500000 |
+| 2019 | Japan   | Wheat     |      52189000 |
+| 2019 | Japan   | NULL      |   98778689000 |
+| 2019 | Russia  | Oil       |        950000 |
+| 2019 | Russia  | Rice      |     852156500 |
+| 2019 | Russia  | NULL      |     853106500 |
+| 2019 | NULL    | NULL      |   99631795500 |
+| NULL | NULL    | NULL      | 1119445134600 |
++------+---------+-----------+---------------+
+38 rows in set (0.00 sec)
+
+mysql> select * from sales where year = 2017;
++------+---------+-----------+---------------+
+| year | country | product   | profit        |
++------+---------+-----------+---------------+
+| 2017 | India   | Mangoes   | 2500000       |
+| 2017 | India   | Oil       | 620000        |
+| 2017 | India   | Rice      | 7250000       |
+| 2017 | Japan   | Apples    | 10206700      |
+| 2017 | Japan   | Mangoes   | 21552400      |
+| 2017 | Russia  | Mangoes   | 6500000       |
+| 2017 | USA     | Fast Food | 1000000000000 |
+| 2017 | USA     | Mangoes   | 36000000      |
+| 2017 | USA     | Oil       | 3500000       |
++------+---------+-----------+---------------+
+9 rows in set (0.00 sec)
+
+mysql> select product,profit from sales where year = 2017 or year = 2019;
++-----------+---------------+
+| product   | profit        |
++-----------+---------------+
+| Mangoes   | 2500000       |
+| Oil       | 620000        |
+| Rice      | 7250000       |
+| Apples    | 10206700      |
+| Mangoes   | 21552400      |
+| Mangoes   | 6500000       |
+| Fast Food | 1000000000000 |
+| Mangoes   | 36000000      |
+| Oil       | 3500000       |
+| Rice      | 98726500000   |
+| Wheat     | 52189000      |
+| Oil       | 950000        |
+| Rice      | 852156500     |
++-----------+---------------+
+13 rows in set (0.00 sec)
+
+mysql> select * from sales where country = "India" or country = "Japan" and year = 2017 or year = 2019 group by country,year;
+ERROR 1055 (42000): Expression #3 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'DWM.sales.product' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
+mysql> select year,country,sum(profit) from sales where country = "India" or country = "Japan" and year = 2017 or year = 2019 group by country,year;
++------+---------+-------------+
+| year | country | sum(profit) |
++------+---------+-------------+
+| 2017 | India   |    10370000 |
+| 2018 | India   |    59960000 |
+| 2017 | Japan   |    31759100 |
+| 2019 | Japan   | 98778689000 |
+| 2019 | Russia  |   853106500 |
++------+---------+-------------+
+5 rows in set (0.00 sec)
+
+mysql> select year,country,sum(profit) from sales where (country = "India" or country = "Japan") and (year = 2017 or year = 2019) group by country,year;
++------+---------+-------------+
+| year | country | sum(profit) |
++------+---------+-------------+
+| 2017 | India   |    10370000 |
+| 2017 | Japan   |    31759100 |
+| 2019 | Japan   | 98778689000 |
++------+---------+-------------+
+3 rows in set (0.00 sec)
+
+mysql> select year,country,sum(profit) from sales where (country = "India" or country = "Japan") and (year = 2017 or year = 2018) group by country,year;
++------+---------+-------------+
+| year | country | sum(profit) |
++------+---------+-------------+
+| 2017 | India   |    10370000 |
+| 2018 | India   |    59960000 |
+| 2017 | Japan   |    31759100 |
+| 2018 | Japan   |   625520000 |
++------+---------+-------------+
+4 rows in set (0.01 sec)
+
+mysql> select country sum(IF(product = "Oil",profit,Null) as "Oil",
+    -> sum(IF(product = "Apples",profit,Null) as "Apples",
+    -> sum(IF(product = "Mangoes",profit,Null) as "Mangoes",
+    -> sum(IF(product = "Mangoes",profit,Null) as "Mangoes",
+    -> sum(IF(product = "Mangoes",profit,Null) as "Mangoes",
+    -> 
+[1]+  Stopped                 mysql -u root -p
+reema@reema-Inspiron-3558:~$ mysql -u root -p 
+Enter password: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 8
+Server version: 5.7.25-0ubuntu0.18.04.2 (Ubuntu)
+
+Copyright (c) 2000, 2019, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use DWM
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> select country sum(IF(product = "Oil",profit,Null) as "Oil",
+    ->     -> sum(IF(product = "Apples",profit,Null) as "Apples",
+    ->     -> sum(IF(product = "Mangoes",profit,Null) as "Mangoes",
+    -> sum(IF(product = "Wheat",profit,Null) as "Wheat",
+    -> sum(IF(product = "Fast Food",profit,Null) as "Fast Food",
+    -> sum(IF(product = "Rice",profit,Null) as "Rice";
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'sum(IF(product = "Oil",profit,Null) as "Oil",
+    -> sum(IF(product = "Apples",p' at line 1
+mysql> select country sum(IF(product = "Oil",profit,Null) as "Oil",
+    -> sum(IF(product = "Apples",profit,Null) as "Apples",
+    -> sum(IF(product = "Mangoes",profit,Null) as "Mangoes",
+    -> sum(IF(product = "Wheat",profit,Null) as "Wheat",
+    -> sum(IF(product = "Fast Food",profit,Null) as "Fast Food",
+    -> sum(IF(product = "Rice",profit,Null) as "Rice";
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'sum(IF(product = "Oil",profit,Null) as "Oil",
+sum(IF(product = "Apples",profit,N' at line 1
+mysql> select country sum(IF(product = "Oil",profit,Null)) as "Oil", sum(IF(product = "Apples",profit,Null)) as "Apples", sum(IF(product = "Mangoes",profit,Null)) as "Mangoes", sum(IF(product = "Wheat",profit,Null)) as "Wheat", sum(IF(product = "Fast Food",profit,Null)) as "Fast Food", sum(IF(product = "Rice",profit,Null)) as "Rice";
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'sum(IF(product = "Oil",profit,Null)) as "Oil", sum(IF(product = "Apples",profit,' at line 1
+mysql> select country sum(IF(product = "Oil",profit,Null)) as "Oil", sum(IF(product = "Apples",profit,Null)) as "Apples", sum(IF(product = "Mangoes",profit,Null)) as "Mangoes", sum(IF(product = "Wheat",profit,Null)) as "Wheat", sum(IF(product = "Fast Food",profit,Null)) as "Fast Food", sum(IF(product = "Rice",profit,Null)) as "Rice" from sales group by country;
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'sum(IF(product = "Oil",profit,Null)) as "Oil", sum(IF(product = "Apples",profit,' at line 1
+mysql> select country, sum(IF(product = "Oil",profit,Null)) as "Oil", sum(IF(product = "Apples",profit,Null)) as "Apples", sum(IF(product = "Mangoes",profit,Null)) as "Mangoes", sum(IF(product = "Wheat",profit,Null)) as "Wheat", sum(IF(product = "Fast Food",profit,Null)) as "Fast Food", sum(IF(product = "Rice",profit,Null)) as "Rice" from sales group by country;
++---------+-----------+----------+----------+------------+---------------+-------------+
+| country | Oil       | Apples   | Mangoes  | Wheat      | Fast Food     | Rice        |
++---------+-----------+----------+----------+------------+---------------+-------------+
+| India   |    620000 |   460000 | 12000000 |       NULL |          NULL |    57250000 |
+| Japan   | 625420000 | 10206700 | 21552400 |   52189000 |        100000 | 98726500000 |
+| Russia  |    950000 |  7500000 |  6500000 | 6985230000 |       4500000 |   852156500 |
+| USA     |  39500000 |  6500000 | 36000000 |       NULL | 1012000000000 |        NULL |
++---------+-----------+----------+----------+------------+---------------+-------------+
+4 rows in set (0.03 sec)
+
+mysql> 
+
